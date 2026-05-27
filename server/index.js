@@ -22,8 +22,19 @@ await app.register(fastifyWebsocket, {
 await app.register(fastifyStatic, {
   root: publicDir,
   prefix: '/',
-  index: 'index.html',
+  index: false,
 });
+
+// The local server is the app, not a marketing site — `/` lands on the
+// chat. The landing page is still served by GitHub Pages for discovery.
+app.get('/', async (req, reply) => {
+  const qIdx = req.url.indexOf('?');
+  const qs = qIdx >= 0 ? req.url.slice(qIdx) : '';
+  return reply.redirect('/app.html' + qs, 302);
+});
+
+// Old marketing landing is still reachable at /landing if you want it.
+app.get('/landing', async (req, reply) => reply.sendFile('index.html'));
 
 app.get('/healthz', async () => ({ ok: true, mode: config.mode, ...snapshot() }));
 
@@ -43,7 +54,7 @@ app.setNotFoundHandler(async (req, reply) => {
   if (req.url.startsWith('/api/') || req.url.startsWith('/ws')) {
     return reply.code(404).send({ error: 'not-found' });
   }
-  return reply.sendFile('index.html');
+  return reply.sendFile('app.html');
 });
 
 try {
