@@ -1,0 +1,120 @@
+/* Memshare — design system foundation.
+   See docs/DESIGN_SYSTEM.md. Don't add color, don't add rounded corners,
+   don't add shadows. Stick to the ladder. */
+
+:root[data-theme="dark"],
+:root {
+  --bg:      #0a0a0a;
+  --bg-2:    #101010;
+  --bg-3:    #151515;
+  --line:    #1a1a1a;
+  --line-2:  #262626;
+  --line-3:  #3a3a3a;
+  --text:    #f4f4f4;
+  --text-2:  #cfcfcf;
+  --dim:     #8a8a8a;
+  --faint:   #5a5a5a;
+  --ghost:   #2c2c2c;
+  --live:    #3dd07a;
+  --error:   #e07070;
+}
+
+:root[data-theme="light"] {
+  --bg:      #fafafa; --bg-2:#f3f3f3; --bg-3:#ececec;
+  --line:    #e7e7e7; --line-2:#d6d6d6; --line-3:#b8b8b8;
+  --text:    #0a0a0a; --text-2:#2a2a2a;
+  --dim:     #5a5a5a; --faint:#8a8a8a; --ghost:#c4c4c4;
+  --live:    #2aa75e; --error:#b03030;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px; line-height: 1.55;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+
+::selection { background: var(--text); color: var(--bg); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+input, button, textarea, select {
+  font: inherit; color: inherit; background: transparent;
+  border: 1px solid var(--line-2); padding: .55rem .85rem;
+  border-radius: 0; outline: none;
+}
+button { cursor: pointer; }
+button:hover, input:hover, textarea:hover { border-color: var(--line-3); }
+input:focus, textarea:focus { border-color: var(--text-2); }
+textarea { resize: none; }
+
+.tight { font-family: 'Inter Tight', sans-serif; letter-spacing: -.025em; }
+.mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.dim   { color: var(--dim); }
+.faint { color: var(--faint); }
+.text2 { color: var(--text-2); }
+.cap {
+  font-family: 'Inter Tight', sans-serif; font-weight: 500;
+  font-size: .66rem; color: var(--faint);
+  text-transform: uppercase; letter-spacing: .16em;
+}
+.micro-cap {
+  font-family: 'JetBrains Mono', monospace; font-weight: 500;
+  font-size: .68rem; color: var(--faint);
+  text-transform: uppercase; letter-spacing: .14em;
+}
+
+.wrap { max-width: 1480px; margin: 0 auto; padding: 0 2.5rem; }
+@media (max-width: 900px) { .wrap { padding: 0 1.5rem; } }
+
+section { padding: 6.5rem 0; border-top: 1px solid var(--line); }
+
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+.pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--live); box-shadow: 0 0 8px rgba(61, 208, 122, .5);
+  display: inline-block; animation: pulseAnim 2s ease-in-out infinite;
+  vertical-align: middle;
+}
+.pulse.off { background: var(--faint); box-shadow: none; animation: none; }
+.pulse.warn { background: var(--error); box-shadow: 0 0 8px rgba(224, 112, 112, .5); }
+@keyframes pulseAnim { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+
+.brand {
+  font-family: 'Inter Tight'; font-weight: 500; font-size: 1.5rem;
+  letter-spacing: -.055em; line-height: .95;
+  display: inline-flex; align-items: baseline; gap: .42rem; color: var(--text);
+}
+.brand .glyph {
+  display: inline-block; width: .85rem; height: .85rem;
+  border: 1.5px solid var(--text); border-radius: 50%;
+  position: relative; transform: translateY(.05em);
+}
+.brand .glyph::after {
+  content: ""; position: absolute; inset: 25%;
+  background: var(--text); border-radius: 50%;
+}
+
+.kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono'; font-size: .7rem;
+  color: var(--text-2); min-width: 26px; height: 26px; padding: 0 .4em;
+  border: 1px solid var(--line-3);
+}
+
+.startbox {
+  display: flex; align-items: center; gap: .7rem;
+  border-bottom: 1px solid var(--text); padding: .45rem 0;
+  cursor: pointer; transition: padding-left .15s;
+}
+.startbox:hover { padding-left: .3rem; }
+.startbox span { font-family: 'Inter Tight'; color: var(--text); font-size: 1rem; }
+.startbox .arrow { margin-left: auto; color: var(--text); font-size: 1.05rem; transition: transform .2s; }
+.startbox:hover .arrow { transform: translateX(4px); }

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Memshare</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Inter+Tight:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+</head>
+<body class="app">
+  <div class="app-shell">
+
+    <header class="bar">
+      <div class="left">
+        <a class="brand" href="/"><span class="glyph"></span>Memshare</a>
+        <div class="room-tag" style="visibility:hidden">
+          <span class="lbl">room</span><span class="code mono"></span>
+          <button class="copy-room" title="copy share URL">copy url</button>
+        </div>
+      </div>
+      <div></div>
+      <div class="right">
+        <span class="peer-count micro-cap">0 peers</span>
+        <span><span class="pulse off"></span><span class="status-label">idle</span> · <span class="clock mono">00:00:00</span></span>
+      </div>
+    </header>
+
+    <div class="main">
+      <aside class="aside">
+        <section>
+          <div class="cap">room</div>
+          <div class="room-code">——————</div>
+          <div class="share-row">
+            <button class="copy-code">code</button>
+            <button class="copy-url">url</button>
+          </div>
+        </section>
+
+        <section class="peers-section">
+          <div class="cap">peers</div>
+          <div class="peer-list"></div>
+        </section>
+
+        <section class="files-section">
+          <div class="cap">files</div>
+          <div class="file-list"></div>
+        </section>
+
+        <section>
+          <div class="cap">your fingerprint</div>
+          <div class="my-fp mono dim">—</div>
+          <div class="faint" style="font-size:.72rem;line-height:1.5">
+            Verify out-of-band with your peer before sharing anything sensitive.
+          </div>
+        </section>
+      </aside>
+
+      <div class="thread-wrap">
+
+        <div class="thread"></div>
+
+        <div class="joiner" style="display:none">
+          <h1 class="tight">Join a room.<br><span class="dim">Or start a new one.</span></h1>
+          <p class="blurb">Six characters. No accounts. Nothing to install. Messages stay encrypted between you and your peers — the server only ever sees ciphertext.</p>
+
+          <div class="field">
+            <input name="room" maxlength="6" placeholder="ABCD23" autocomplete="off" spellcheck="false">
+            <button type="button" class="join-btn">join →</button>
+          </div>
+
+          <div class="or">or</div>
+
+          <div class="new">
+            <span class="label">Start a new room</span>
+            <span class="arrow">→</span>
+          </div>
+
+          <div class="id-block">
+            <span class="cap">your session fingerprint</span>
+            <span class="fp">—</span>
+            <span class="faint" style="font-size:.72rem">An ephemeral key just for this session. Verify it with your peer before sharing anything sensitive.</span>
+          </div>
+        </div>
+
+        <div class="composer" style="display:none">
+          <textarea placeholder="type a message · paste code · drop a file" rows="1"></textarea>
+          <div class="bar">
+            <div class="hints">
+              <span><span class="kbd">↵</span> send</span>
+              <span><span class="kbd">⇧↵</span> newline</span>
+              <span>``` lang for code</span>
+            </div>
+            <div class="actions">
+              <input type="file" hidden>
+              <button class="file-btn" type="button">+ file</button>
+              <button class="send-btn" type="button" disabled>send</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="drop-overlay">
+      <div class="drop-msg tight">drop to send · encrypted before it leaves your browser</div>
+    </div>
+
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
