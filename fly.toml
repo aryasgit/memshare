@@ -1,0 +1,37 @@
+# Fly.io config for Memshare.
+#
+# Quick start (one-time):
+#   brew install flyctl              # or: curl -L https://fly.io/install.sh | sh
+#   fly auth login                   # or `fly auth signup`
+#   fly launch --copy-config --no-deploy
+#       └─ picks app name + region. If "memshare" is taken (likely), it
+#          suggests an alternative; accept it. The chosen name lands here
+#          in `app = "..."` below.
+#   fly deploy
+#
+# After deploy: fly status, fly logs, fly open
+
+app = "memshare"
+primary_region = "iad"
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/healthz"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

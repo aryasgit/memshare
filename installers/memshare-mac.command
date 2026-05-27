@@ -79,5 +79,5 @@ cat <<'GO'
 
 GO
 
-(sleep 2 && open "http://localhost:8787") &
+(sleep 2 && open "http://localhost:8787/app.html") &
 exec npm run local

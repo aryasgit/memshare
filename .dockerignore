@@ -1,0 +1,17 @@
+node_modules/
+.git/
+.github/
+.claude/
+data/
+docs/
+installers/
+scripts/
+*.log
+.env*
+.DS_Store
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+fly.toml
+public/test.html

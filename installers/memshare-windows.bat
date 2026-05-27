@@ -67,5 +67,5 @@ echo   Close this window to stop.
 echo ------------------------------------------------------
 echo.
 
-start "" http://localhost:8787
+start "" http://localhost:8787/app.html
 call npm run local

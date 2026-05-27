@@ -30,7 +30,7 @@ Everything cryptographic happens in the browser via WebCrypto.
 | Network | One server deployed publicly. Teams join by room code.     | Convenient. Default. Server still cannot decrypt.   |
 | Local   | One teammate runs Memshare on their laptop; others join via LAN URL. | Highest assurance — there is no third party.        |
 
-## Run
+## Run locally
 
 ```sh
 npm install
@@ -42,6 +42,39 @@ npm run dev        # network mode with file-watch restart
 Then open <http://localhost:8787>. The landing page is at `/`, the app
 is at `/app.html`. Hit "Start a new room" to get a code, then send the
 URL to a teammate.
+
+## Deploy to Fly.io
+
+For a hosted instance that phones / users on different networks can
+reach. The container is ~70 MB and idles to zero between sessions.
+
+```sh
+# one-time setup
+brew install flyctl                # or: curl -L https://fly.io/install.sh | sh
+fly auth login                     # or `fly auth signup`
+
+# create the app (interactive — pick a name + region; this writes back to fly.toml)
+fly launch --copy-config --no-deploy
+
+# deploy
+fly deploy
+```
+
+Outputs `https://<your-app>.fly.dev`. Open it on any device. Both
+HTTP and WebSocket (WSS) ride the same TLS endpoint — no extra config.
+
+Re-deploy on each change with `fly deploy`. The `Dockerfile` is single
+stage, no build step.
+
+### Distributing to users
+
+- **Local users** (a teammate on the same Wi-Fi): they download the zip
+  installer from your Pages site, double-click, done.
+- **Remote users** (different networks, phones): they open your Fly
+  URL in a browser. No install.
+
+End-to-end encryption is identical in both paths — the Fly relay also
+only sees ciphertext.
 
 ### Environment
 
