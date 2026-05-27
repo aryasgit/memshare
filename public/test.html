@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Memshare — Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; background: #0a0a0a; color: #f4f4f4;
+           max-width: 720px; margin: 2rem auto; padding: 0 1.5rem; line-height: 1.5; }
+    h1 { font-weight: 300; letter-spacing: -.025em; }
+    input, button, textarea { font: inherit; background: #101010; color: inherit;
+           border: 1px solid #262626; padding: .5rem .7rem; }
+    button { cursor: pointer; }
+    button:hover { background: #1a1a1a; }
+    .row { display: flex; gap: .5rem; margin: .5rem 0; }
+    .row input { flex: 1; }
+    #log { background: #101010; border: 1px solid #262626; padding: .8rem;
+           min-height: 240px; max-height: 50vh; overflow-y: auto;
+           font-family: ui-monospace, monospace; font-size: 13px; }
+    .l { color: #8a8a8a; }
+    .me { color: #cfcfcf; }
+    .you { color: #f4f4f4; }
+    .sys { color: #5a5a5a; font-style: italic; }
+    .err { color: #e07070; }
+    .ok { color: #3dd07a; }
+    .meta { color: #5a5a5a; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Memshare · test client</h1>
+  <p class="meta">Open this in two tabs (or two browsers). Same room code. Type messages. Drop files.</p>
+
+  <div class="row">
+    <input id="room" placeholder="room code (6 chars)" maxlength="6" style="text-transform:uppercase">
+    <button id="newRoom">new</button>
+    <button id="connect">connect</button>
+  </div>
+
+  <div id="me" class="meta"></div>
+  <div id="peers" class="meta"></div>
+
+  <div id="log"></div>
+
+  <div class="row">
+    <input id="msg" placeholder="message">
+    <button id="send">send</button>
+  </div>
+  <div class="row">
+    <input id="file" type="file">
+  </div>
+
+  <script type="module">
+    import { Connection } from './js/ws.js';
+
+    const $ = (id) => document.getElementById(id);
+    const log = $('log');
+    const pushLine = (cls, html) => {
+      const div = document.createElement('div');
+      div.className = cls;
+      div.innerHTML = html;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    };
+    const esc = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+    let conn = null;
+
+    $('newRoom').onclick = async () => {
+      const r = await (await fetch('/api/new-room')).json();
+      $('room').value = r.code;
+    };
+
+    $('connect').onclick = async () => {
+      const code = $('room').value.trim().toUpperCase();
+      if (!/^[A-Z2-9]{6}$/.test(code)) { pushLine('err', 'bad room code'); return; }
+      conn = new Connection({ room: code });
+      conn.on('status', s => pushLine('sys', 'status: ' + s));
+      conn.on('welcome', d => {
+        pushLine('ok', `joined ${esc(code)} as ${esc(d.id)} (fp ${esc(conn.identity.fp)})`);
+        $('me').textContent = `you: ${d.id} · fp ${conn.identity.fp}`;
+        renderPeers();
+      });
+      conn.on('peer-joined', p => { pushLine('sys', `peer joined: ${esc(p.id)} (fp ${esc(p.fp)})`); renderPeers(); });
+      conn.on('peer-left', p => { pushLine('sys', `peer left: ${esc(p.id)}`); renderPeers(); });
+      conn.on('msg', m => {
+        const who = m.self ? 'me' : 'you';
+        const t = new Date(m.ts).toTimeString().slice(0, 8);
+        pushLine(who, `<span class="meta">${t} ${esc(m.from)}</span> · ${esc(m.text)}`);
+      });
+      conn.on('msg-error', e => pushLine('err', 'decrypt err: ' + esc(e.reason)));
+      conn.on('error', e => pushLine('err', `${esc(e.code || 'err')}: ${esc(e.reason || '')}`));
+      conn.on('file-init', f => pushLine('sys', `file incoming: ${esc(f.name)} (${f.size} B, ${f.chunkCount} chunks)`));
+      conn.on('file-complete', f => {
+        const url = URL.createObjectURL(new Blob([f.bytes], { type: f.contentType }));
+        pushLine('you', `file ready: <a href="${url}" download="${esc(f.name)}" style="color:#3dd07a">${esc(f.name)}</a>`);
+      });
+      conn.on('file-sent-init', f => pushLine('sys', `sending ${esc(f.name)} (${f.size} B)`));
+      conn.on('file-sent-complete', f => pushLine('ok', `sent file ${esc(f.id)}`));
+      await conn.connect();
+    };
+
+    function renderPeers() {
+      if (!conn) return;
+      const peers = [...conn.peers.values()].map(p => `${p.id} (${p.fp})`).join(', ') || '(none)';
+      $('peers').textContent = `peers: ${peers}`;
+    }
+
+    $('send').onclick = async () => {
+      const t = $('msg').value;
+      if (!t || !conn) return;
+      await conn.send(t);
+      $('msg').value = '';
+    };
+    $('msg').addEventListener('keydown', e => { if (e.key === 'Enter') $('send').click(); });
+
+    $('file').onchange = async () => {
+      const f = $('file').files[0];
+      if (!f || !conn) return;
+      try { await conn.sendFile(f); } catch (e) { pushLine('err', e.message); }
+      $('file').value = '';
+    };
+
+    // auto-fill from ?room=
+    const u = new URL(location.href);
+    if (u.searchParams.get('room')) {
+      $('room').value = u.searchParams.get('room').toUpperCase();
+    }
+  </script>
+</body>
+</html>
