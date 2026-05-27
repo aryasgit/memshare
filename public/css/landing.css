@@ -60,8 +60,17 @@ body.landing { overflow-x: hidden; }
 
 .hero .actions {
   display: flex; flex-direction: column; gap: 0;
-  max-width: 320px; margin-top: 2.4rem;
+  max-width: 340px; margin-top: 2.4rem;
 }
+.hero .actions .os-hint {
+  font-family: 'JetBrains Mono'; font-size: .6rem;
+  color: var(--faint); margin-left: .55rem;
+  text-transform: uppercase; letter-spacing: .14em;
+}
+.hero .actions a.this-os .startbox {
+  border-bottom-width: 2px;
+}
+.dl-link { display: block; margin-top: 1.4rem; max-width: 360px; }
 
 .crosshair {
   position: fixed; inset: 0; pointer-events: none; z-index: 1;

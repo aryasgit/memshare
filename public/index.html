@@ -5,12 +5,12 @@
   <title>Memshare — encrypted code & files between machines</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta name="description" content="Encrypted real-time chat, code paste, and file transfer for developer teams. The server never sees plaintext.">
+  <meta name="description" content="Encrypted real-time chat, code paste, and file transfer for developer teams. Runs on your own machine. The relay never sees plaintext.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Inter+Tight:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/landing.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
 <body class="landing">
 
@@ -22,9 +22,9 @@
 
   <nav class="topnav">
     <div class="wrap inner">
-      <a class="brand" href="/"><span class="glyph"></span>Memshare</a>
+      <a class="brand" href="./"><span class="glyph"></span>Memshare</a>
       <div class="live"><span class="pulse"></span><span>local · <span data-clock>00:00:00</span></span></div>
-      <a class="cta" href="/app.html">open app →</a>
+      <a class="cta" href="#download">download ↓</a>
     </div>
   </nav>
 
@@ -32,12 +32,13 @@
     <div class="wrap">
       <div class="grid">
         <div class="reveal">
-          <h1>Move <span class="ul">code</span><br>between machines.<br><span class="lite">Encrypted.</span> <span class="dim">Instant.</span></h1>
-          <p class="lede">A two-person chat for developers who don't want their pasted secrets cached in a SaaS log forever. The server only sees ciphertext.</p>
-          <div class="actions">
-            <a href="/app.html"><div class="startbox"><span>Open Memshare</span><span class="arrow">→</span></div></a>
+          <h1>Move <span class="ul">code</span><br>between machines.<br><span class="lite">Encrypted.</span> <span class="dim">Local.</span></h1>
+          <p class="lede">A two-person chat for developers who don't want their pasted secrets cached in a SaaS log forever. You run the server. There is no middleman.</p>
+          <div class="actions" data-os-actions>
+            <a href="downloads/memshare-mac.zip" data-os="mac" download><div class="startbox"><span>Download for macOS<span class="os-hint"></span></span><span class="arrow">↓</span></div></a>
+            <a href="downloads/memshare-windows.zip" data-os="win" download><div class="startbox"><span>Download for Windows<span class="os-hint"></span></span><span class="arrow">↓</span></div></a>
             <a href="#loop"><div class="startbox"><span>See how it works</span><span class="arrow">→</span></div></a>
-            <a href="#install"><div class="startbox"><span>Run it on your own machine</span><span class="arrow">→</span></div></a>
+            <a href="https://github.com/aryasgit/memshare" target="_blank" rel="noopener"><div class="startbox"><span>Read the source</span><span class="arrow">→</span></div></a>
           </div>
         </div>
 
@@ -57,7 +58,7 @@
 
 <span class="hl">sock.on(<span class="str">'msg'</span>, m =&gt; render(m));</span>
 sock.send(<span class="str">'pushed the patch — take a look'</span>);
-<span class="com">// the server saw: 0x9a2e1ff7…  (and nothing else)</span></pre>
+<span class="com">// the relay saw: 0x9a2e1ff7…  (and nothing else)</span></pre>
             </div>
           </div>
         </div>
@@ -70,7 +71,7 @@ sock.send(<span class="str">'pushed the patch — take a look'</span>);
       <div class="phil-grid reveal">
         <div class="phil-col">
           <div class="cap">threat model</div>
-          <p>Memshare assumes <strong>the server is hostile</strong>. It exchanges ECDH public keys, relays ciphertext, and stores nothing in plaintext. If we get subpoenaed, we have ciphertext to hand over.</p>
+          <p>Memshare assumes <strong>the relay is hostile</strong>. Since you run the relay yourself, the threat reduces to "your own laptop". Browsers exchange ECDH keys and relay ciphertext through Node; nothing is written to disk, nothing leaves the LAN.</p>
         </div>
 
         <div class="phil-col">
@@ -83,7 +84,7 @@ sock.send(<span class="str">'pushed the patch — take a look'</span>);
         </div>
 
         <div class="phil-col">
-          <div class="cap">what the server sees</div>
+          <div class="cap">what the relay sees</div>
           <div class="list">
             <div class="row"><span class="tag">y</span><span class="text">Public keys</span></div>
             <div class="row"><span class="tag">y</span><span class="text">Opaque ciphertext</span></div>
@@ -105,7 +106,7 @@ sock.send(<span class="str">'pushed the patch — take a look'</span>);
       <span>SYNTAX-AWARE PASTE</span><span class="sep">·</span>
       <span>FILES UNDER FIFTY MEGABYTES</span><span class="sep">·</span>
       <span>NO TELEMETRY</span><span class="sep">·</span>
-      <span>LOCAL-FIRST</span><span class="sep">·</span>
+      <span>RUNS ON YOUR LAPTOP</span><span class="sep">·</span>
       <span>ECDH P-256</span><span class="sep">·</span>
       <span>AES-GCM 256</span><span class="sep">·</span>
       <span>OPEN SOURCE</span><span class="sep">·</span>
@@ -119,30 +120,30 @@ sock.send(<span class="str">'pushed the patch — take a look'</span>);
           <div class="num">01</div>
           <div class="cap">The Loop</div>
         </div>
-        <h2 class="tight">Open a room.<br><span class="dim">Hand off the code.</span> <span class="lite">Start typing.</span></h2>
+        <h2 class="tight">Download it.<br><span class="dim">Open a room.</span> <span class="lite">Start typing.</span></h2>
       </div>
 
       <div class="steps reveal">
         <div class="step">
           <div class="row">
             <div class="num">01</div>
-            <div class="title">Open the app and tap <span class="mono">start a new room</span>.</div>
+            <div class="title">Download the zip for your OS and double-click the file inside.</div>
             <div class="caret">+</div>
           </div>
           <div class="body">
             <div></div>
-            <div class="copy">A six-character code appears. Your browser generates a fresh ECDH P-256 keypair just for this session; the private half never leaves the tab.</div>
+            <div class="copy">A small installer script clones the repo, runs <code>npm install</code> once, and starts the relay in local mode. Your browser opens <code>http://localhost:8787</code> automatically.</div>
           </div>
         </div>
         <div class="step">
           <div class="row">
             <div class="num">02</div>
-            <div class="title">Hand the code to your teammate over any channel.</div>
+            <div class="title">Hit <span class="mono">start a new room</span>. Hand the URL to a teammate.</div>
             <div class="caret">+</div>
           </div>
           <div class="body">
             <div></div>
-            <div class="copy">Slack, signal, a sticky note. The code by itself is enough to <em>join</em> the room — verifying you're talking to the right person is done out-of-band with the four-quartet fingerprint shown on screen.</div>
+            <div class="copy">Memshare prints a LAN URL like <code>http://192.168.1.5:8787</code>. Anyone on the same Wi-Fi can open it. Verify the four-quartet fingerprint with your teammate out-of-band so a malicious LAN device can't sit in the middle.</div>
           </div>
         </div>
         <div class="step">
@@ -153,7 +154,7 @@ sock.send(<span class="str">'pushed the patch — take a look'</span>);
           </div>
           <div class="body">
             <div></div>
-            <div class="copy">Fenced markdown blocks (<code>```python</code>) are syntax-highlighted. Files are encrypted in 256 KB chunks before they leave your browser. Everything streams to peers in real time.</div>
+            <div class="copy">Fenced markdown blocks (<code>```python</code>) are syntax-highlighted. Files are encrypted in 256 KB chunks before they leave your browser. Each peer derives its own pair key via ECDH — the relay only ever sees opaque blobs.</div>
           </div>
         </div>
         <div class="step">
@@ -164,63 +165,59 @@ sock.send(<span class="str">'pushed the patch — take a look'</span>);
           </div>
           <div class="body">
             <div></div>
-            <div class="copy">The server's room state is held in memory only and is cleared when the last peer disconnects. File blobs expire after one hour even if you forgot. Nothing is written to disk.</div>
+            <div class="copy">Room state is held in memory only and is cleared when the last peer disconnects. File blobs expire after one hour even if you forgot. Nothing is written to disk.</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="install" id="install">
+  <section class="install" id="download">
     <div class="wrap">
       <div class="sec-head reveal">
         <div class="l">
           <div class="num">02</div>
-          <div class="cap">Install</div>
+          <div class="cap">Download</div>
         </div>
-        <h2 class="tight">One process. <span class="lite">Either on the public host,</span><br><span class="dim">or on your laptop.</span></h2>
+        <h2 class="tight">Two ways in. <span class="lite">Double-click installer,</span><br><span class="dim">or clone the repo.</span></h2>
       </div>
 
       <div class="install-grid reveal">
         <div>
-          <div class="tabs" data-kind="mode">
-            <button data-tab="network" class="on">Network mode</button>
-            <button data-tab="local">Local mode</button>
-            <button data-tab="hack">Hack on it</button>
+          <div class="tabs" data-kind="os">
+            <button data-tab="mac" class="on">macOS</button>
+            <button data-tab="win">Windows</button>
+            <button data-tab="hack">From source</button>
           </div>
 
-          <div class="panel on" data-panel="network">
-            <p>Join the hosted Memshare. No install on either side.</p>
-            <ol>
-              <li>Open <code>memshare.app</code> in two tabs (or send the URL to a teammate).</li>
-              <li>One side taps <code>start a new room</code>; share the 6-character code.</li>
-              <li>Verify the fingerprint quartet over Signal / a phone call / in person.</li>
-            </ol>
+          <div class="panel on" data-panel="mac">
+            <p>Download the zip, unzip, double-click <code>memshare-mac.command</code>.</p>
+            <p>The first time, macOS may say <em>"cannot be opened because it is from an unidentified developer"</em>. Right-click → Open → confirm, or go to System Settings → Privacy &amp; Security and click "Open Anyway".</p>
+            <p>The installer needs Node 20+ and git. If either is missing it'll tell you exactly what to install.</p>
+            <a href="downloads/memshare-mac.zip" download class="dl-link"><div class="startbox"><span>memshare-mac.zip</span><span class="arrow">↓</span></div></a>
           </div>
 
-          <div class="panel" data-panel="local">
-            <p>Run Memshare on your machine. Teammates on the same LAN connect over your IP. The server you run is the only one involved.</p>
-<pre><code>git clone https://github.com/you/memshare.git
-cd memshare
-npm install
-npm run local</code></pre>
-            <p>Memshare prints a LAN URL like <code>http://192.168.1.5:8787</code>. Hand that to a teammate on the same network.</p>
+          <div class="panel" data-panel="win">
+            <p>Download the zip, unzip, double-click <code>memshare-windows.bat</code>.</p>
+            <p>The first time, SmartScreen may warn <em>"Windows protected your PC"</em>. Click "More info" → "Run anyway".</p>
+            <p>The installer needs Node 20+ and Git for Windows. If either is missing it'll tell you exactly what to install.</p>
+            <a href="downloads/memshare-windows.zip" download class="dl-link"><div class="startbox"><span>memshare-windows.zip</span><span class="arrow">↓</span></div></a>
           </div>
 
           <div class="panel" data-panel="hack">
-            <p>It's vanilla Node + vanilla browser JS. No build step.</p>
-<pre><code>npm run dev   # node --watch
-# server/  → Fastify + ws relay
-# public/  → HTML/CSS/ES modules
-# scripts/smoke.mjs → encrypted round-trip test</code></pre>
-            <p>The crypto module is <code>public/js/crypto.js</code>. The relay is <code>server/relay.js</code>. Read both in twenty minutes.</p>
+            <p>Vanilla Node + vanilla browser JS. No build step.</p>
+<pre><code>git clone https://github.com/aryasgit/memshare.git
+cd memshare
+npm install
+npm run local</code></pre>
+            <p>The crypto module is <code>public/js/crypto.js</code>. The relay is <code>server/relay.js</code>. Both readable in twenty minutes. <code>scripts/smoke.mjs</code> spawns two virtual peers and round-trips an encrypted message + a 200 KB file.</p>
           </div>
         </div>
 
         <div class="install-promise">
           <h3 class="tight">No accounts.<br><span class="dim">No telemetry.</span><br><span class="dim">No database.</span></h3>
-          <p>The whole server is &lt;400 lines of JavaScript. Room state lives in memory and dies with the process. File blobs are wiped after an hour. We can't read your messages because we never have your keys.</p>
-          <a href="/app.html"><div class="startbox"><span>Open Memshare</span><span class="arrow">→</span></div></a>
+          <p>The whole relay is &lt;400 lines of JavaScript. Room state lives in memory and dies with the process. File blobs are wiped after an hour. We can't read your messages because we never have your keys — and you control the only relay that touches them.</p>
+          <a href="https://github.com/aryasgit/memshare" target="_blank" rel="noopener"><div class="startbox"><span>Source on GitHub</span><span class="arrow">→</span></div></a>
         </div>
       </div>
     </div>
@@ -237,7 +234,9 @@ npm run local</code></pre>
       <div class="footer-bar">
         <div>© Memshare — sibling to <a href="https://github.com/" target="_blank" rel="noopener">Memcon</a></div>
         <div style="text-align:center">
-          <a href="/app.html">Open app</a> · <a href="#install">Self-host</a>
+          <a href="downloads/memshare-mac.zip" download>macOS zip</a> ·
+          <a href="downloads/memshare-windows.zip" download>Windows zip</a> ·
+          <a href="https://github.com/aryasgit/memshare" target="_blank" rel="noopener">Source</a>
         </div>
         <div class="right">
           <span class="pulse"></span> live · <span data-clock>00:00:00</span>
@@ -246,6 +245,6 @@ npm run local</code></pre>
     </div>
   </footer>
 
-  <script src="/js/landing.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>

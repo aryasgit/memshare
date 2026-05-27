@@ -1,0 +1,72 @@
+name: Pages
+
+# Publishes the landing page (only) to GitHub Pages, plus two zip
+# installers (mac, windows) under /downloads/. The chat app itself is
+# NOT published — it needs the local server to function.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/index.html'
+      - 'public/css/**'
+      - 'public/js/landing.js'
+      - 'installers/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble _site
+        run: |
+          set -euo pipefail
+          mkdir -p _site/css _site/js _site/downloads
+
+          # Landing assets
+          cp public/index.html _site/index.html
+          cp public/css/base.css _site/css/base.css
+          cp public/css/landing.css _site/css/landing.css
+          cp public/js/landing.js _site/js/landing.js
+
+          # macOS zip
+          STAGE_MAC=$(mktemp -d)
+          cp installers/memshare-mac.command "$STAGE_MAC/memshare-mac.command"
+          cp installers/README-mac.txt "$STAGE_MAC/README.txt"
+          chmod +x "$STAGE_MAC/memshare-mac.command"
+          (cd "$STAGE_MAC" && zip -qr "$GITHUB_WORKSPACE/_site/downloads/memshare-mac.zip" .)
+
+          # Windows zip
+          STAGE_WIN=$(mktemp -d)
+          cp installers/memshare-windows.bat "$STAGE_WIN/memshare-windows.bat"
+          cp installers/README-windows.txt "$STAGE_WIN/README.txt"
+          (cd "$STAGE_WIN" && zip -qr "$GITHUB_WORKSPACE/_site/downloads/memshare-windows.zip" .)
+
+          ls -la _site _site/css _site/js _site/downloads
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -52,6 +52,13 @@ function setupAccordion() {
   $('.step')?.classList.add('open');
 }
 
+function detectOS() {
+  const ua = (navigator.userAgent + ' ' + (navigator.platform || '')).toLowerCase();
+  if (ua.includes('mac') || ua.includes('iphone') || ua.includes('ipad')) return 'mac';
+  if (ua.includes('win')) return 'win';
+  return null;
+}
+
 function setupTabs() {
   const tabs = $$('.tabs button');
   const panels = $$('.panel');
@@ -60,12 +67,25 @@ function setupTabs() {
     for (const p of panels) p.classList.toggle('on', p.dataset.panel === name);
   }
   for (const t of tabs) t.addEventListener('click', () => pick(t.dataset.tab));
-  // default by UA
-  const ua = (navigator.userAgent + ' ' + (navigator.platform || '')).toLowerCase();
-  const initial = $('.tabs')?.dataset.kind === 'os'
-    ? (ua.includes('win') ? 'win' : (ua.includes('mac') || ua.includes('iphone') || ua.includes('ipad') ? 'mac' : 'linux'))
+  const kind = $('.tabs')?.dataset.kind;
+  const initial = kind === 'os'
+    ? (detectOS() || tabs[0]?.dataset.tab)
     : tabs[0]?.dataset.tab;
   if (initial) pick(initial);
+}
+
+function setupHeroOSHint() {
+  const os = detectOS();
+  if (!os) return;
+  for (const a of $$('[data-os-actions] a[data-os]')) {
+    const hint = a.querySelector('.os-hint');
+    if (a.dataset.os === os) {
+      a.classList.add('this-os');
+      if (hint) hint.textContent = ' · your machine';
+      // move the matching button to the top of the actions list
+      a.parentElement.prepend(a);
+    }
+  }
 }
 
 function setupReveal() {
@@ -92,5 +112,6 @@ function setupMarquee() {
 setupCrosshair();
 setupAccordion();
 setupTabs();
+setupHeroOSHint();
 setupReveal();
 setupMarquee();
