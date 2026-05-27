@@ -1,0 +1,21 @@
+{
+  "name": "memshare",
+  "version": "0.1.0",
+  "description": "End-to-end encrypted real-time collaboration for developer teams.",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "local": "MEMSHARE_MODE=local node server/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fastify/static": "^7.0.4",
+    "@fastify/websocket": "^10.0.1",
+    "fastify": "^4.28.1"
+  },
+  "license": "MIT"
+}
