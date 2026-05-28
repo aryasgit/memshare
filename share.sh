@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # share.sh — start Memshare locally and expose it via a Cloudflare quick tunnel.
-# One command, one URL. Ctrl+C tears both down cleanly.
+# Survives macOS sleep (via caffeinate) and auto-restarts the tunnel if it
+# drops. Ctrl+C tears everything down cleanly.
 #
 # Usage:    ./share.sh        (from the repo root)
-#       or  npm run share     (works from anywhere inside the repo)
+#       or  npm run share
 
 set -e
 cd "$(dirname "$0")"
@@ -12,15 +13,13 @@ PORT=${MEMSHARE_PORT:-8787}
 
 # ── prereqs ──────────────────────────────────────────────────────────
 if ! command -v node >/dev/null 2>&1; then
-  echo "✗  Node.js is not installed."
-  echo "   Install Node 20+ from https://nodejs.org and re-run."
+  echo "✗  Node.js is not installed. Get it from https://nodejs.org"
   exit 1
 fi
 
 if ! command -v cloudflared >/dev/null 2>&1; then
   echo "✗  cloudflared is not installed."
   echo "   brew install cloudflared"
-  echo "   (or https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/)"
   exit 1
 fi
 
@@ -30,25 +29,39 @@ if [ ! -d node_modules ]; then
 fi
 
 if lsof -ti :"$PORT" >/dev/null 2>&1; then
-  echo "✗  Port $PORT is already in use. Kill the other process or set MEMSHARE_PORT."
-  echo "   Hint: pkill -f 'node server/index.js'  (only kills Memshare)"
+  echo "✗  Port $PORT is already in use."
+  echo "   Hint: pkill -f 'node server/index.js'"
   exit 1
 fi
 
-# ── temp logs ────────────────────────────────────────────────────────
 LOG_DIR=$(mktemp -d -t memshare-share.XXXXXX)
 SERVER_LOG="$LOG_DIR/server.log"
 TUNNEL_LOG="$LOG_DIR/tunnel.log"
 
+# ── graceful stop signalling ─────────────────────────────────────────
+RUNNING=1
+SERVER_PID=""
+TUNNEL_PID=""
+CAF_PID=""
+
 cleanup() {
+  RUNNING=0
   echo
   echo "→  Shutting down…"
-  [ -n "${TUNNEL_PID:-}" ] && kill "$TUNNEL_PID" 2>/dev/null || true
-  [ -n "${SERVER_PID:-}" ] && kill "$SERVER_PID" 2>/dev/null || true
+  [ -n "$TUNNEL_PID" ] && kill "$TUNNEL_PID" 2>/dev/null || true
+  [ -n "$SERVER_PID" ] && kill "$SERVER_PID" 2>/dev/null || true
+  [ -n "$CAF_PID"    ] && kill "$CAF_PID"    2>/dev/null || true
   wait 2>/dev/null || true
   echo "   Logs preserved at: $LOG_DIR"
 }
 trap cleanup EXIT INT TERM
+
+# ── prevent macOS sleep while sharing ────────────────────────────────
+if command -v caffeinate >/dev/null 2>&1; then
+  # -d display, -i idle, -m disk, -s prevent on AC, -u user activity
+  caffeinate -dimsu &
+  CAF_PID=$!
+fi
 
 # ── start Memshare ────────────────────────────────────────────────────
 echo "→  Starting Memshare on http://localhost:$PORT"
@@ -64,36 +77,59 @@ if ! curl -sf "http://localhost:$PORT/healthz" >/dev/null 2>&1; then
   exit 1
 fi
 
-# ── start cloudflared ─────────────────────────────────────────────────
-echo "→  Starting Cloudflare Tunnel"
-cloudflared tunnel --url "http://localhost:$PORT" >"$TUNNEL_LOG" 2>&1 &
-TUNNEL_PID=$!
-
-URL=""
-for i in {1..60}; do
-  URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$TUNNEL_LOG" 2>/dev/null | head -1)
-  if [ -n "$URL" ]; then break; fi
-  sleep 0.5
-done
-
-if [ -z "$URL" ]; then
-  echo "✗  Couldn't read a tunnel URL from cloudflared. Log: $TUNNEL_LOG"
-  exit 1
-fi
-
-# ── banner ────────────────────────────────────────────────────────────
-cat <<EOF
+# ── tunnel loop (auto-restart) ───────────────────────────────────────
+print_banner() {
+  local url="$1"
+  cat <<EOF
 
 ──────────────────────────────────────────────────────────────────
-  Memshare is live.
+  Memshare is live at:
 
-      $URL
+      $url
 
   Open that URL on any device. Share it with teammates.
   Press Ctrl+C in this window to stop both processes.
 ──────────────────────────────────────────────────────────────────
 
 EOF
+}
 
-# Block until either child dies; trap cleans up the survivor.
-wait
+attempt=0
+while [ "$RUNNING" = "1" ]; do
+  attempt=$((attempt + 1))
+  : > "$TUNNEL_LOG"
+
+  if [ "$attempt" -gt 1 ]; then
+    echo "→  Reconnecting tunnel (attempt #$attempt)"
+  else
+    echo "→  Starting Cloudflare Tunnel"
+  fi
+
+  cloudflared tunnel --url "http://localhost:$PORT" >"$TUNNEL_LOG" 2>&1 &
+  TUNNEL_PID=$!
+
+  URL=""
+  for i in {1..60}; do
+    URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$TUNNEL_LOG" 2>/dev/null | head -1)
+    if [ -n "$URL" ]; then break; fi
+    # exit early if cloudflared already died
+    if ! kill -0 "$TUNNEL_PID" 2>/dev/null; then break; fi
+    sleep 0.5
+  done
+
+  if [ -n "$URL" ]; then
+    print_banner "$URL"
+  else
+    echo "✗  Couldn't read tunnel URL. Log: $TUNNEL_LOG"
+  fi
+
+  # Wait for cloudflared to exit (will return on Ctrl+C signal too)
+  wait "$TUNNEL_PID" 2>/dev/null || true
+  TUNNEL_PID=""
+
+  if [ "$RUNNING" = "1" ]; then
+    echo
+    echo "⚠  Tunnel dropped. Reconnecting in 3 seconds…"
+    sleep 3
+  fi
+done

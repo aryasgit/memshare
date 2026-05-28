@@ -427,21 +427,100 @@ function wireAside() {
   });
 }
 
+// Heuristic: does this look like code we should auto-fence?
+function looksLikeCode(text) {
+  const lines = text.split('\n');
+  if (lines.length < 2) return false;
+
+  let score = 0;
+
+  // Indentation — at least 2 lines starting with whitespace
+  const indented = lines.filter(l => /^[\t ]{2,}/.test(l)).length;
+  if (indented >= 2) score += 2;
+
+  // Code-ish tokens
+  const tokenRe = /[{};]|=>|\b(function|const|let|var|def|class|return|import|from|export|public|private|fn|impl|pub|async|await|yield|throw)\b|#include|::|->/g;
+  const tokenHits = (text.match(tokenRe) || []).length;
+  if (tokenHits >= 3) score += 2;
+  else if (tokenHits >= 1) score += 1;
+
+  // Balanced brackets
+  const opens = (text.match(/[{[(]/g) || []).length;
+  const closes = (text.match(/[}\])]/g) || []).length;
+  if (opens >= 2 && Math.abs(opens - closes) <= 2) score += 1;
+
+  // Semicolon line endings
+  const semiEnds = lines.filter(l => /;\s*$/.test(l)).length;
+  if (semiEnds >= 2) score += 1;
+
+  // Shebang or comment-y first line
+  if (/^#!|^\/\/|^\/\*|^#\s|^--\s/.test(lines[0])) score += 1;
+
+  // Negative: lots of long prose lines
+  const prose = lines.filter(l => {
+    const t = l.trim();
+    return t.length > 80 && !/[{};=]|=>/.test(t) && /[a-z][a-z ]{30,}/.test(t);
+  }).length;
+  if (prose >= 2) score -= 3;
+
+  return score >= 3;
+}
+
+function guessLanguage(text) {
+  if (!globalThis.hljs?.highlightAuto) return '';
+  try {
+    const r = globalThis.hljs.highlightAuto(text, [
+      'javascript', 'typescript', 'python', 'go', 'rust', 'java',
+      'c', 'cpp', 'csharp', 'ruby', 'php', 'swift', 'kotlin',
+      'bash', 'json', 'yaml', 'xml', 'css', 'sql', 'markdown', 'diff',
+    ]);
+    return (r && r.language && r.relevance >= 5) ? r.language : '';
+  } catch { return ''; }
+}
+
+function insertAtCursor(ta, text) {
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + text.length;
+  ta.dispatchEvent(new Event('input'));
+}
+
 function wirePaste() {
   document.addEventListener('paste', (e) => {
     if (document.activeElement !== els.textarea) return;
+
+    // 1) File paste (existing behaviour)
     const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const it of items) {
-      if (it.kind === 'file') {
-        const f = it.getAsFile();
-        if (f) {
-          e.preventDefault();
-          sendFile(f);
-          return;
+    if (items) {
+      for (const it of items) {
+        if (it.kind === 'file') {
+          const f = it.getAsFile();
+          if (f) {
+            e.preventDefault();
+            sendFile(f);
+            return;
+          }
         }
       }
     }
+
+    // 2) Code paste — auto-fence if it looks like code
+    const text = e.clipboardData?.getData('text/plain');
+    if (!text || text.length < 40) return;
+
+    const ta = els.textarea;
+    const before = ta.value.slice(0, ta.selectionStart);
+    // Skip if cursor is already inside an open ``` fence
+    if (((before.match(/```/g) || []).length) % 2 === 1) return;
+
+    if (!looksLikeCode(text)) return;
+
+    e.preventDefault();
+    const lang = guessLanguage(text);
+    const trimmed = text.replace(/^[\r\n]+|[\r\n]+$/g, '');
+    const fence = '```' + lang + '\n' + trimmed + '\n```\n';
+    insertAtCursor(ta, fence);
+    autosizeTextarea();
   });
 }
 
